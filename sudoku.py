@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 import pandas as pd
-from sudoku_generator import generate_sudoku, generate_hint
+from sudoku_generator import generate_sudoku, get_hint
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -115,8 +115,7 @@ def hard_button_callback():
 # Hint button callback function
 def hint_button_callback():
     global hint
-    if selected_cell is not None:
-        hint = generate_hint(puzzle)
+    hint = get_hint(puzzle)
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -252,7 +251,7 @@ while True:
             elif event.key == pygame.K_h:  # Hint key pressed
                 if selected_cell is not None:
                     # Call the AI hint generator function and store the hint
-                    hint = generate_hint(puzzle)
+                    hint = get_hint(puzzle)
 
     window.fill(WHITE)
 

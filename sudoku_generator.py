@@ -1,7 +1,6 @@
 import random
 import pandas as pd
 
-
 class SudokuPuzzle:
     def __init__(self, puzzle):
         self.puzzle = puzzle
@@ -106,98 +105,68 @@ def remove_numbers(grid, difficulty):
             grid[row][col] = 0
             cells_removed += 1
 
-def generate_hint(puzzle):
-    # Implement AI hint generator logic here
-    # Analyze the puzzle to find a cell with a conflict or incorrect value
-    # Use backtracking or constraint propagation to find a valid value for the cell
-    # Return the hint as (row, col, value) or None if no hint is available
+def get_hint(puzzle):
+    # Find the most difficult cell to fill
+    row, col = find_most_difficult_cell(puzzle)
+
+    # Perform constraint propagation to find a valid value for the cell
+    if row is not None and col is not None:
+        value = puzzle.get_value(row, col)
+        valid_values = constraint_propagation(puzzle.puzzle, row, col)
+        if value == 0 and valid_values:
+            valid_value = random.choice(valid_values)
+            puzzle.puzzle[row][col] = valid_value
+
+def constraint_propagation(grid, row, col):
+    valid_values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+    # Remove values already present in the same row and column
+    for i in range(9):
+        if grid[row][i] in valid_values:
+            valid_values.remove(grid[row][i])
+        if grid[i][col] in valid_values:
+            valid_values.remove(grid[i][col])
+
+    # Remove values already present in the 3x3 subgrid
+    start_row, start_col = (row // 3) * 3, (col // 3) * 3
+    for i in range(start_row, start_row + 3):
+        for j in range(start_col, start_col + 3):
+            if grid[i][j] in valid_values:
+                valid_values.remove(grid[i][j])
+
+    return list(valid_values)
+
+def find_most_difficult_cell(puzzle):
     max_conflicts = -1
-    hint_cell = None
+    most_difficult_cell = None
 
     for row in range(9):
         for col in range(9):
-            # Skip cells with initial puzzle values
-            if not puzzle.is_editable(row, col):
-                continue
+            if puzzle.get_value(row, col) == 0:
+                conflicts = count_conflicts(puzzle, row, col)
+                if conflicts > max_conflicts:
+                    max_conflicts = conflicts
+                    most_difficult_cell = (row, col)
 
-            # Count conflicts for each cell
-            conflicts = count_conflicts(puzzle, row, col)
+    return most_difficult_cell
 
-            if conflicts > max_conflicts:
-                max_conflicts = conflicts
-                hint_cell = (row, col)
-
-    if hint_cell is None:
-        return None
-
-    row, col = hint_cell
-
-def count_conflicts(puzzle, row, col):
+def count_conflicts(grid, row, col):
     conflicts = 0
+    num = grid.get_value(row, col)
 
-    # Check conflicts in the row
-    conflicts += len(set(puzzle.loc[row, :])) - len(puzzle.loc[row, :].replace(0, pd.NA).dropna())
+    # Count conflicts in the row and column
+    for i in range(9):
+        if grid.get_value(row, i) == num:
+            conflicts += 1
+        if grid.get_value(i, col) == num:
+            conflicts += 1
 
-    # Check conflicts in the column
-    conflicts += len(set(puzzle.loc[:, col])) - len(puzzle.loc[:, col].replace(0, pd.NA).dropna())
-
-    # Check conflicts in the 3x3 subgrid
+    # Count conflicts in the 3x3 subgrid
     start_row, start_col = (row // 3) * 3, (col // 3) * 3
-    subgrid_values = puzzle.loc[start_row:start_row + 2, start_col:start_col + 2]
-    conflicts += len(set(subgrid_values.values.flatten())) - len(subgrid_values.values.flatten().replace(0, pd.NA).dropna())
+    for i in range(start_row, start_row + 3):
+        for j in range(start_col, start_col + 3):
+            if grid.get_value(i, j) == num:
+                conflicts += 1
 
     return conflicts
 
-def get_empty_cell(puzzle):
-    # Find the empty cell with the fewest legal values (MRV heuristic)
-    empty_cells = []
-    for row in range(9):
-        for col in range(9):
-            if puzzle.loc[row, col] == 0:
-                num_legal_values = len(get_legal_values(puzzle, row, col))
-                empty_cells.append(((row, col), num_legal_values))
-    empty_cells.sort(key=lambda cell: cell[1])
-    return empty_cells[0][0] if empty_cells else None
-
-def get_legal_values(puzzle, row, col):
-    # Get the set of legal values for the given cell
-    legal_values = set(range(1, 10))
-
-    # Remove values that conflict in the row, column, and 3x3 subgrid
-    legal_values -= set(puzzle.loc[row, :])
-    legal_values -= set(puzzle.loc[:, col])
-    start_row, start_col = (row // 3) * 3, (col // 3) * 3
-    subgrid_values = puzzle.loc[start_row:start_row + 2, start_col:start_col + 2]
-    legal_values -= set(subgrid_values.values.flatten())
-
-    return legal_values
-
-def backtracking(puzzle, row, col):
-    if row == 9:
-        return puzzle  # The puzzle is solved
-
-    if puzzle.loc[row, col] != 0:
-        return backtracking(puzzle, *get_next_cell(row, col))
-
-    for value in get_legal_values(puzzle, row, col):
-        puzzle.loc[row, col] = value
-        if is_valid_solution(puzzle):
-            next_cell = get_next_cell(row, col)
-            if backtracking(puzzle, *next_cell) is not None:
-                return puzzle
-        puzzle.loc[row, col] = 0
-
-    return None
-
-def get_next_cell(row, col):
-    if col < 8:
-        return row, col + 1
-    else:
-        return row + 1, 0
-
-def is_valid_solution(puzzle):
-    # Check if the puzzle is a valid solution
-    return all(len(set(puzzle.loc[row, :])) == 9 for row in range(9)) \
-           and all(len(set(puzzle.loc[:, col])) == 9 for col in range(9)) \
-           and all(len(set(puzzle.loc[start_row:start_row + 2, start_col:start_col + 2].values.flatten())) == 9
-                   for start_row in (0, 3, 6) for start_col in (0, 3, 6))
