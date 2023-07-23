@@ -55,6 +55,20 @@ puzzle = generate_sudoku(difficulty)
 selected_cell = None
 selected_number = None
 
+# Define the key mappings
+KEY_MAPPING = {
+    pygame.K_1: 1,
+    pygame.K_2: 2,
+    pygame.K_3: 3,
+    pygame.K_4: 4,
+    pygame.K_5: 5,
+    pygame.K_6: 6,
+    pygame.K_7: 7,
+    pygame.K_8: 8,
+    pygame.K_9: 9,
+    pygame.K_BACKSPACE: None
+}
+
 # Define the Button class
 class Button:
     def __init__(self, text, position, width, height, color, hover_color, callback):
@@ -145,20 +159,6 @@ def draw_grid():
                 number_rect = number_text.get_rect(center=(cell_x + CELL_SIZE // 2, cell_y + CELL_SIZE // 2))
                 window.blit(number_text, number_rect)
 
-# Define the key mappings
-KEY_MAPPING = {
-    pygame.K_1: 1,
-    pygame.K_2: 2,
-    pygame.K_3: 3,
-    pygame.K_4: 4,
-    pygame.K_5: 5,
-    pygame.K_6: 6,
-    pygame.K_7: 7,
-    pygame.K_8: 8,
-    pygame.K_9: 9,
-    pygame.K_DELETE: None,
-    pygame.K_BACKSPACE: None
-}
 
 # Main game loop
 while True:
