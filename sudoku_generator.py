@@ -115,11 +115,7 @@ def get_hint(puzzle):
         valid_values = constraint_propagation(puzzle.puzzle, row, col)
         if value == 0 and valid_values:
             valid_value = random.choice(valid_values)
-            return {
-                "row": row,
-                "col": col,
-                "valid_value": valid_value
-            }
+            return row, col, valid_value
 
 def constraint_propagation(grid, row, col):
     valid_values = {1, 2, 3, 4, 5, 6, 7, 8, 9}

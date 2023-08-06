@@ -64,9 +64,6 @@ KEY_MAPPING = {
     pygame.K_BACKSPACE: None
 }
 
-# New variable to store the hint
-hint_button = None
-
 # Define the Button class
 class Button:
     def __init__(self, text, position, width, height, color, hover_color, callback):
@@ -114,9 +111,7 @@ def hard_button_callback():
 
 # Hint button callback function
 def hint_button_callback():
-    global hint
-    hint = get_hint(puzzle)
-    puzzle.set_value(hint["row"], hint["col"], hint["valid_value"])
+    global hint_button
     reset_selection()
         
 # Define difficulty button size.
@@ -131,6 +126,8 @@ buttons = [
     Button(DIFFICULTY_HARD, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hard_button_callback),
     Button(PLAYER_HINT, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hint_button_callback)
 ]
+
+hint_button = buttons[3]
 
 # Calculate the total buttons' width and margin to center them horizontally
 total_buttons_width = (BUTTON_WIDTH + BUTTON_MARGIN) * \
@@ -221,6 +218,7 @@ def draw_grid():
                     center=(cell_x + CELL_SIZE // 2, cell_y + CELL_SIZE // 2))
                 window.blit(number_text, number_rect)
 
+hint_row, hint_col, hint_value = None, None, None
 
 # Main game loop
 while True:
@@ -235,6 +233,9 @@ while True:
                 if clicked_cell is not None:
                     selected_cell = clicked_cell
                     selected_number = None
+            if hint_button.is_hovered() and pygame.mouse.get_pressed()[0]:  # Left mouse button
+                if hint_row is None and hint_col is None and hint_value is None:  # No previous hint
+                    hint_row, hint_col, hint_value = get_hint(puzzle)
             elif pygame.mouse.get_pressed()[2]:  # Right mouse button
                 pos = pygame.mouse.get_pos()
                 clicked_cell = get_clicked_cell(pos)
@@ -251,6 +252,10 @@ while True:
                 if selected_cell is not None and selected_number is not None:
                     puzzle.set_value(selected_cell[0], selected_cell[1], selected_number)
                     reset_selection()
+             # Display hint on the user interface
+    if hint_row is not None and hint_col is not None and hint_value is not None:
+        puzzle.set_value(hint_row, hint_col, hint_value)
+        hint_row, hint_col, hint_value = None, None, None
 
     window.fill(WHITE)
 
