@@ -65,7 +65,7 @@ KEY_MAPPING = {
 }
 
 # New variable to store the hint
-hint = None
+hint_button = None
 
 # Define the Button class
 class Button:
@@ -116,6 +116,8 @@ def hard_button_callback():
 def hint_button_callback():
     global hint
     hint = get_hint(puzzle)
+    puzzle.set_value(hint["row"], hint["col"], hint["valid_value"])
+    reset_selection()
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -219,6 +221,7 @@ def draw_grid():
                     center=(cell_x + CELL_SIZE // 2, cell_y + CELL_SIZE // 2))
                 window.blit(number_text, number_rect)
 
+
 # Main game loop
 while True:
     for event in pygame.event.get():
@@ -248,10 +251,6 @@ while True:
                 if selected_cell is not None and selected_number is not None:
                     puzzle.set_value(selected_cell[0], selected_cell[1], selected_number)
                     reset_selection()
-            elif event.key == pygame.K_h:  # Hint key pressed
-                if selected_cell is not None:
-                    # Call the AI hint generator function and store the hint
-                    hint = get_hint(puzzle)
 
     window.fill(WHITE)
 

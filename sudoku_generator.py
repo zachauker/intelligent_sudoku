@@ -115,7 +115,11 @@ def get_hint(puzzle):
         valid_values = constraint_propagation(puzzle.puzzle, row, col)
         if value == 0 and valid_values:
             valid_value = random.choice(valid_values)
-            puzzle.puzzle[row][col] = valid_value
+            return {
+                "row": row,
+                "col": col,
+                "valid_value": valid_value
+            }
 
 def constraint_propagation(grid, row, col):
     valid_values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
@@ -137,7 +141,7 @@ def constraint_propagation(grid, row, col):
     return list(valid_values)
 
 def find_most_difficult_cell(puzzle):
-    max_conflicts = -1
+    max_conflicts = 1
     most_difficult_cell = None
 
     for row in range(9):
@@ -147,8 +151,7 @@ def find_most_difficult_cell(puzzle):
                 if conflicts > max_conflicts:
                     max_conflicts = conflicts
                     most_difficult_cell = (row, col)
-
-    return most_difficult_cell
+                    return most_difficult_cell
 
 def count_conflicts(grid, row, col):
     conflicts = 0
