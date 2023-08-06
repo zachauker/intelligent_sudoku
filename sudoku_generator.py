@@ -18,8 +18,64 @@ class SudokuPuzzle:
     def copy(self):
         return SudokuPuzzle([row[:] for row in self.puzzle])
     
+    def is_valid_number(self, row, col, num):
+        # Check if the number exists in the same row
+        if num in self.puzzle[row]:
+            return False
+
+        # Check if the number exists in the same column
+        for i in range(9):
+            if self.puzzle[i][col] == num:
+                return False
+
+        # Check if the number exists in the same 3x3 subgrid
+        start_row = (row // 3) * 3
+        start_col = (col // 3) * 3
+        for i in range(start_row, start_row + 3):
+            for j in range(start_col, start_col + 3):
+                if self.puzzle[i][j] == num:
+                    return False
+
+        return True
+    
+    def get_possible_values(self, row, col):
+        possible_values = []
+        for value in range(1, 10):
+            if self.is_valid_number(row, col, value):
+                possible_values.append(value)
+        return possible_values
+    
     def is_initial_value(self, row, col):
         return self.initial_puzzle[row][col] != 0
+    
+    def is_valid(self):
+        # Check rows and columns for duplicates
+        for i in range(9):
+            row_values = set()
+            col_values = set()
+            for j in range(9):
+                row_val = self.get_value(i, j)
+                col_val = self.get_value(j, i)
+                if row_val in row_values or col_val in col_values:
+                    return False
+                if row_val != 0:
+                    row_values.add(row_val)
+                if col_val != 0:
+                    col_values.add(col_val)
+
+        # Check 3x3 subgrids for duplicates
+        for i in range(0, 9, 3):
+            for j in range(0, 9, 3):
+                subgrid_values = set()
+                for x in range(i, i + 3):
+                    for y in range(j, j + 3):
+                        val = self.get_value(x, y)
+                        if val in subgrid_values:
+                            return False
+                        if val != 0:
+                            subgrid_values.add(val)
+
+        return True
     
 def generate_sudoku(difficulty):
     # Create an empty Sudoku grid
@@ -105,36 +161,46 @@ def remove_numbers(grid, difficulty):
             grid[row][col] = 0
             cells_removed += 1
 
+
 def get_hint(puzzle):
-    # Find the most difficult cell to fill
-    row, col = find_most_difficult_cell(puzzle)
+    # Get a list of all empty cells
+    empty_cells = [(row, col) for row in range(9)
+                   for col in range(9) if puzzle.get_value(row, col) == 0]
 
-    # Perform constraint propagation to find a valid value for the cell
-    if row is not None and col is not None:
-        value = puzzle.get_value(row, col)
-        valid_values = constraint_propagation(puzzle.puzzle, row, col)
-        if value == 0 and valid_values:
-            valid_value = random.choice(valid_values)
-            return row, col, valid_value
+    # Sort the empty cells based on the number of conflicts they have
+    sorted_cells = sorted(empty_cells, key=lambda cell: count_conflicts(
+        puzzle, cell[0], cell[1]), reverse=True)
 
-def constraint_propagation(grid, row, col):
-    valid_values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+    # Attempt constraint propagation on each cell until a valid hint is found
+    for cell in sorted_cells:
+        row, col = cell
 
-    # Remove values already present in the same row and column
-    for i in range(9):
-        if grid[row][i] in valid_values:
-            valid_values.remove(grid[row][i])
-        if grid[i][col] in valid_values:
-            valid_values.remove(grid[i][col])
+        # Check if constraint propagation finds a valid hint for this cell
+        if constraint_propagation(puzzle, row, col):
+            return row, col, puzzle.get_possible_values(row, col)[0]
 
-    # Remove values already present in the 3x3 subgrid
-    start_row, start_col = (row // 3) * 3, (col // 3) * 3
-    for i in range(start_row, start_row + 3):
-        for j in range(start_col, start_col + 3):
-            if grid[i][j] in valid_values:
-                valid_values.remove(grid[i][j])
+    # If no valid hint is found, return None
+    return None, None, None
 
-    return list(valid_values)
+
+def constraint_propagation(puzzle, row, col):
+    original_value = puzzle.get_value(row, col)
+    possible_values = puzzle.get_possible_values(row, col)
+
+    for value in possible_values:
+        # Temporarily set the cell value to the possible value
+        puzzle.set_value(row, col, value)
+
+        # Check if the puzzle remains valid after setting the value
+        if puzzle.is_valid():
+            # Reset the cell value to its original value
+            puzzle.set_value(row, col, original_value)
+            return True
+
+        # Reset the cell value to its original value
+        puzzle.set_value(row, col, original_value)
+
+    return False
 
 def find_most_difficult_cell(puzzle):
     max_conflicts = 1
