@@ -23,6 +23,8 @@ WINDOW_WIDTH = 700
 WINDOW_HEIGHT = 800
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Sudoku")
+# Initialize the GUI manager
+gui_manager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 # Set up fonts
 FONT_LARGE = pygame.font.Font(None, 48)
@@ -121,7 +123,6 @@ def hint_button_callback():
 def solve_button_callback():
     global puzzle, show_dialog
     show_dialog = True
-
     # puzzle.solve_sudoku()
         
 # Define difficulty button size.
@@ -236,14 +237,57 @@ DIALOG_Y = (WINDOW_HEIGHT - DIALOG_HEIGHT) // 2
 # Define the font
 FONT = pygame.font.Font(None, 32)
 
-def draw_solve_puzzle_dialog():
-    pygame.draw.rect(window, GRAY, (DIALOG_X, DIALOG_Y,
-                     DIALOG_WIDTH, DIALOG_HEIGHT))
-    text = FONT.render("Hello, this is a dialog popup!", True, BLACK)
-    text_rect = text.get_rect(
-        center=(DIALOG_X + DIALOG_WIDTH // 2, DIALOG_Y + DIALOG_HEIGHT // 2))
-    window.blit(text, text_rect)
+# Define the algorithms
+algorithms = [
+    "Backtracking",
+    "Constraint Propagation",
+    "DLX Algorithm",
+    "Simulated Annealing",
+    "Genetic Algorithm"
+]
 
+selected_algorithm = None
+
+def draw_solve_puzzle_dialog():
+    global selected_algorithm
+
+    # Create a message window to show the algorithm options
+    message_window = UIMessageWindow(
+        rect=pygame.Rect((WINDOW_WIDTH // 4, WINDOW_HEIGHT // 4),
+                         (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)),
+        html_message="Select an algorithm:",
+        manager=gui_manager,
+    )
+
+    # Create a button for each algorithm
+    for i, algorithm in enumerate(algorithms):
+        button_rect = pygame.Rect(50, 50 + 50 * i, 200, 40)
+        button = UIButton(
+            relative_rect=button_rect,
+            text=algorithm,
+            manager=gui_manager,
+            container=message_window,
+            object_id=f"algorithm_button_{i}",
+        )
+            
+        # Process GUI events
+        gui_manager.process_events(event)
+
+        # Update the GUI
+        gui_manager.update(0)
+
+        # Draw the GUI
+        window.fill((255, 255, 255))
+        gui_manager.draw_ui(window)
+        pygame.display.flip()
+
+
+# Create the "Solve" button
+solve_button = UIButton(
+    relative_rect=pygame.Rect((100, 100), (150, 40)),
+    text="Solve",
+    manager=gui_manager,
+)
 
 hint_row, hint_col, hint_value = None, None, None
 
@@ -262,7 +306,7 @@ while running:
                 if clicked_cell is not None:
                     selected_cell = clicked_cell
                     selected_number = None
-            if hint_button.is_hovered() and pygame.mouse.get_pressed()[0]:  # Left mouse button
+            elif hint_button.is_hovered() and pygame.mouse.get_pressed()[0]:  # Left mouse button
                 if hint_row is None and hint_col is None and hint_value is None:  # No previous hint
                     hint_row, hint_col, hint_value = get_hint(puzzle)
             elif pygame.mouse.get_pressed()[2]:  # Right mouse button
@@ -271,6 +315,9 @@ while running:
                 if clicked_cell is not None:
                     selected_cell = clicked_cell
                     selected_number = puzzle.get_value(clicked_cell[0], clicked_cell[1])
+            elif event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    selected_algorithm = event.ui_object_id
         elif event.type == pygame.KEYDOWN:
             if event.key in KEY_MAPPING:
                 if selected_cell is not None:
