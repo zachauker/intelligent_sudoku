@@ -35,6 +35,7 @@ DIFFICULTY_EASY = "Easy"
 DIFFICULTY_MEDIUM = "Medium"
 DIFFICULTY_HARD = "Hard"
 PLAYER_HINT = "Hint"
+SOLVE_PUZZLE = "Solve"
 
 # Define Sudoku puzzle grid position and size
 # Calculate the grid position to center it in the window
@@ -113,6 +114,10 @@ def hard_button_callback():
 def hint_button_callback():
     global hint_button
     reset_selection()
+
+def solve_button_callback():
+    global puzzle
+    puzzle.solve_sudoku()
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -124,7 +129,8 @@ buttons = [
     Button(DIFFICULTY_EASY, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, easy_button_callback),
     Button(DIFFICULTY_MEDIUM, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, medium_button_callback),
     Button(DIFFICULTY_HARD, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hard_button_callback),
-    Button(PLAYER_HINT, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hint_button_callback)
+    Button(PLAYER_HINT, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hint_button_callback),
+    Button(SOLVE_PUZZLE, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, solve_button_callback)
 ]
 
 hint_button = buttons[3]
@@ -160,9 +166,6 @@ def reset_selection():
 
 # Function to draw the Sudoku grid
 def draw_grid():
-    # Set to store coordinates of initial puzzle values
-    initial_values = set()
-
     for row in range(9):
         for col in range(9):
             cell_x = GRID_X + col * (CELL_SIZE + CELL_MARGIN)
@@ -212,6 +215,7 @@ def draw_grid():
 
             # Draw the selected number
             if selected_cell == (row, col) and selected_number is not None:
+                number_color = RED if puzzle.is_initial_value(row, col) else BLACK
                 number_text = FONT_SMALL.render(
                     str(selected_number), True, RED)
                 number_rect = number_text.get_rect(
@@ -252,7 +256,7 @@ while True:
                 if selected_cell is not None and selected_number is not None:
                     puzzle.set_value(selected_cell[0], selected_cell[1], selected_number)
                     reset_selection()
-             # Display hint on the user interface
+    # Display hint on the user interface
     if hint_row is not None and hint_col is not None and hint_value is not None:
         puzzle.set_value(hint_row, hint_col, hint_value)
         hint_row, hint_col, hint_value = None, None, None
