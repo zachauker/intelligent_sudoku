@@ -2,6 +2,9 @@ import pygame
 import sys
 import random
 import pandas as pd
+import pygame_gui
+from pygame_gui.elements.ui_button import UIButton
+from pygame_gui.windows.ui_message_window import UIMessageWindow
 from sudoku_generator import generate_sudoku, get_hint
 
 # Define colors
@@ -116,8 +119,10 @@ def hint_button_callback():
     reset_selection()
 
 def solve_button_callback():
-    global puzzle
-    puzzle.solve_sudoku()
+    global puzzle, show_dialog
+    show_dialog = True
+
+    # puzzle.solve_sudoku()
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -222,10 +227,30 @@ def draw_grid():
                     center=(cell_x + CELL_SIZE // 2, cell_y + CELL_SIZE // 2))
                 window.blit(number_text, number_rect)
 
+# Define the dialog size and position
+DIALOG_WIDTH = 400
+DIALOG_HEIGHT = 200
+DIALOG_X = (WINDOW_WIDTH - DIALOG_WIDTH) // 2
+DIALOG_Y = (WINDOW_HEIGHT - DIALOG_HEIGHT) // 2
+
+# Define the font
+FONT = pygame.font.Font(None, 32)
+
+def draw_solve_puzzle_dialog():
+    pygame.draw.rect(window, GRAY, (DIALOG_X, DIALOG_Y,
+                     DIALOG_WIDTH, DIALOG_HEIGHT))
+    text = FONT.render("Hello, this is a dialog popup!", True, BLACK)
+    text_rect = text.get_rect(
+        center=(DIALOG_X + DIALOG_WIDTH // 2, DIALOG_Y + DIALOG_HEIGHT // 2))
+    window.blit(text, text_rect)
+
+
 hint_row, hint_col, hint_value = None, None, None
 
+running = True
+show_dialog = False
 # Main game loop
-while True:
+while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -256,6 +281,10 @@ while True:
                 if selected_cell is not None and selected_number is not None:
                     puzzle.set_value(selected_cell[0], selected_cell[1], selected_number)
                     reset_selection()
+            elif event.key == pygame.K_ESCAPE:
+                # Close the dialog if Escape key is pressed
+                show_dialog = False
+
     # Display hint on the user interface
     if hint_row is not None and hint_col is not None and hint_value is not None:
         puzzle.set_value(hint_row, hint_col, hint_value)
@@ -263,7 +292,12 @@ while True:
 
     window.fill(WHITE)
 
+    # Draws Sudoku grid and writes in initial numbers. 
     draw_grid()
+
+    # If solve button is clicked toggle dialog.
+    if show_dialog:
+        draw_solve_puzzle_dialog()
 
     # Draw the difficulty buttons
     for button in buttons:
