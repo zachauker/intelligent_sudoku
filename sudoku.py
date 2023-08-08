@@ -2,9 +2,6 @@ import pygame
 import sys
 import random
 import pandas as pd
-import pygame_gui
-from pygame_gui.elements.ui_button import UIButton
-from pygame_gui.windows.ui_message_window import UIMessageWindow
 from sudoku_generator import generate_sudoku, get_hint
 
 # Define colors
@@ -23,8 +20,6 @@ WINDOW_WIDTH = 700
 WINDOW_HEIGHT = 800
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Sudoku")
-# Initialize the GUI manager
-gui_manager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 # Set up fonts
 FONT_LARGE = pygame.font.Font(None, 48)
@@ -118,19 +113,39 @@ def hard_button_callback():
 # Hint button callback function
 def hint_button_callback():
     global hint_button
+    hint_row, hint_col, hint_value = get_hint(puzzle)
+    # Display hint on the user interface
+    puzzle.set_value(hint_row, hint_col, hint_value)
+    hint_row, hint_col, hint_value = None, None, None
     reset_selection()
 
 def solve_button_callback():
     global puzzle, show_dialog
     show_dialog = True
+    if show_dialog:
+        for button in dialog.buttons:
+            if button.is_hovered() and pygame.mouse.get_pressed()[0]:
+                algorithm_selected = button.text  # This will store the selected algorithm
+                show_dialog = False  # Close the dialog
     # puzzle.solve_sudoku()
+
+# def backtracking_callback():
+
+# def constraint_callback():
+
+# def dlx_callback():
+
+# def annealing_callback():
+
+# def genetic_callback():
+
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
 BUTTON_HEIGHT = 40
 BUTTON_MARGIN = 20
 
-# Create the difficulty buttons
+# Create the main UI buttons
 buttons = [
     Button(DIFFICULTY_EASY, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, easy_button_callback),
     Button(DIFFICULTY_MEDIUM, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, medium_button_callback),
@@ -139,7 +154,9 @@ buttons = [
     Button(SOLVE_PUZZLE, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, solve_button_callback)
 ]
 
+# To Do see if there is a better way to do this - feels corny 
 hint_button = buttons[3]
+solve_button = buttons[4]
 
 # Calculate the total buttons' width and margin to center them horizontally
 total_buttons_width = (BUTTON_WIDTH + BUTTON_MARGIN) * \
@@ -153,6 +170,41 @@ BUTTON_Y = GRID_Y + GRID_SIZE + 20
 for i, button in enumerate(buttons):
     BUTTON_X = buttons_start_x + (BUTTON_WIDTH + BUTTON_MARGIN) * i
     button.position = (BUTTON_X, BUTTON_Y)
+
+class Dialog:
+    def __init__(self, title, options):
+        self.title = title
+        self.options = options
+        self.buttons = []
+
+        for idx, option in enumerate(options):
+            button_x = WINDOW_WIDTH // 2 - BUTTON_WIDTH // 2
+            button_y = WINDOW_HEIGHT // 2 + idx * \
+                (BUTTON_HEIGHT + BUTTON_MARGIN)
+            button = Button(option.text, (button_x, button_y),
+                            BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, option.callback)
+            self.buttons.append(button)
+
+    def show(self, surface):
+        dialog_rect = pygame.Rect(
+            WINDOW_WIDTH // 4, WINDOW_HEIGHT // 4, WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
+        pygame.draw.rect(surface, GRAY, dialog_rect)
+
+        title_text = FONT_LARGE.render(self.title, True, BLACK)
+        title_rect = title_text.get_rect(
+            center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
+        surface.blit(title_text, title_rect)
+
+        for button in self.buttons:
+            button.draw(surface)
+
+dialog = Dialog("Select Solve Algorithm", [
+        {"text": "Backtracking", "callback": backtracking_callback},
+        {"text":"Constraint Propagation", "callback": constraint_callback},
+        {"text": "DLX Algorithm", "callback": dlx_callback},
+        {"text": "Simulated Annealing", "callback": annealing_callback},
+        {"text": "Genetic Algorithm", "callback": genetic_callback}
+    ])
 
 # Function to get the clicked cell
 def get_clicked_cell(pos):
@@ -228,71 +280,10 @@ def draw_grid():
                     center=(cell_x + CELL_SIZE // 2, cell_y + CELL_SIZE // 2))
                 window.blit(number_text, number_rect)
 
-# Define the dialog size and position
-DIALOG_WIDTH = 400
-DIALOG_HEIGHT = 200
-DIALOG_X = (WINDOW_WIDTH - DIALOG_WIDTH) // 2
-DIALOG_Y = (WINDOW_HEIGHT - DIALOG_HEIGHT) // 2
-
-# Define the font
-FONT = pygame.font.Font(None, 32)
-
-# Define the algorithms
-algorithms = [
-    "Backtracking",
-    "Constraint Propagation",
-    "DLX Algorithm",
-    "Simulated Annealing",
-    "Genetic Algorithm"
-]
-
-selected_algorithm = None
-
-def draw_solve_puzzle_dialog():
-    global selected_algorithm
-
-    # Create a message window to show the algorithm options
-    message_window = UIMessageWindow(
-        rect=pygame.Rect((WINDOW_WIDTH // 4, WINDOW_HEIGHT // 4),
-                         (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)),
-        html_message="Select an algorithm:",
-        manager=gui_manager,
-    )
-
-    # Create a button for each algorithm
-    for i, algorithm in enumerate(algorithms):
-        button_rect = pygame.Rect(50, 50 + 50 * i, 200, 40)
-        button = UIButton(
-            relative_rect=button_rect,
-            text=algorithm,
-            manager=gui_manager,
-            container=message_window,
-            object_id=f"algorithm_button_{i}",
-        )
-            
-        # Process GUI events
-        gui_manager.process_events(event)
-
-        # Update the GUI
-        gui_manager.update(0)
-
-        # Draw the GUI
-        window.fill((255, 255, 255))
-        gui_manager.draw_ui(window)
-        pygame.display.flip()
-
-
-# Create the "Solve" button
-solve_button = UIButton(
-    relative_rect=pygame.Rect((100, 100), (150, 40)),
-    text="Solve",
-    manager=gui_manager,
-)
-
 hint_row, hint_col, hint_value = None, None, None
-
 running = True
 show_dialog = False
+
 # Main game loop
 while running:
     for event in pygame.event.get():
@@ -306,18 +297,21 @@ while running:
                 if clicked_cell is not None:
                     selected_cell = clicked_cell
                     selected_number = None
-            elif hint_button.is_hovered() and pygame.mouse.get_pressed()[0]:  # Left mouse button
-                if hint_row is None and hint_col is None and hint_value is None:  # No previous hint
-                    hint_row, hint_col, hint_value = get_hint(puzzle)
+                # Click handling for all generated buttons on main window.
+                for button in buttons:
+                    if button.is_hovered() and pygame.mouse.get_pressed()[0]:
+                        button.callback()
+                if show_dialog and dialog:
+                    for button in dialog.buttons:
+                        if button.is_hovered() and pygame.mouse.get_pressed()[0]:
+                            button.callback()
             elif pygame.mouse.get_pressed()[2]:  # Right mouse button
                 pos = pygame.mouse.get_pos()
                 clicked_cell = get_clicked_cell(pos)
                 if clicked_cell is not None:
                     selected_cell = clicked_cell
                     selected_number = puzzle.get_value(clicked_cell[0], clicked_cell[1])
-            elif event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    selected_algorithm = event.ui_object_id
+        # Keyboard events
         elif event.type == pygame.KEYDOWN:
             if event.key in KEY_MAPPING:
                 if selected_cell is not None:
@@ -331,25 +325,19 @@ while running:
             elif event.key == pygame.K_ESCAPE:
                 # Close the dialog if Escape key is pressed
                 show_dialog = False
-
-    # Display hint on the user interface
-    if hint_row is not None and hint_col is not None and hint_value is not None:
-        puzzle.set_value(hint_row, hint_col, hint_value)
-        hint_row, hint_col, hint_value = None, None, None
-
+    
+    # Fill the pygame canavs white.
     window.fill(WHITE)
-
+    
     # Draws Sudoku grid and writes in initial numbers. 
     draw_grid()
 
-    # If solve button is clicked toggle dialog.
-    if show_dialog:
-        draw_solve_puzzle_dialog()
-
-    # Draw the difficulty buttons
+    # Draw the buttons
     for button in buttons:
         button.draw(window)
-        if button.is_hovered() and pygame.mouse.get_pressed()[0]:
-            button.callback()
     
+    # Checks if dialog window should be shown and if so renders it. 
+    if show_dialog and dialog is not None:
+        dialog.show(window)
+
     pygame.display.flip()
