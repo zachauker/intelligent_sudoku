@@ -110,10 +110,8 @@ def solve_sudoku_ids(puzzle):
             return result
         depth_limit += 1
 
-
 def depth_limited_search(puzzle, depth_limit):
     return dls_recursive(puzzle, depth_limit)
-
 
 def dls_recursive(puzzle, depth_limit, current_depth=0):
     if current_depth == depth_limit:
