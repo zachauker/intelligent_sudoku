@@ -69,8 +69,8 @@ def solve_sudoku_bfs(puzzle):
     while queue:
         current_puzzle, row, col = queue.popleft()
 
-        if row == -1:
-            return current_puzzle.grid  # Solution found
+        if current_puzzle.is_solved():
+            return current_puzzle # Solution found
 
         for num in range(1, 10):
             if current_puzzle.is_valid_number(row, col, num):
