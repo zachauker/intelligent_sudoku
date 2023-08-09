@@ -9,7 +9,7 @@ def backtracking(puzzle):
 
     for temp_row in range(9):
         for temp_col in range(9):
-            if puzzle.grid[row][col] == 0:
+            if puzzle.grid[temp_row][temp_col] == 0:
                 row, col = temp_row, temp_col
 
     # If no empty cells are found, the Sudoku is solved
