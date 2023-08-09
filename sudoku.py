@@ -16,8 +16,8 @@ BLUE = (0, 0, 255)
 pygame.init()
 
 # Set up the window
-WINDOW_WIDTH = 700
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 900
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Sudoku")
 
@@ -36,6 +36,7 @@ DIFFICULTY_MEDIUM = "Medium"
 DIFFICULTY_HARD = "Hard"
 PLAYER_HINT = "Hint"
 SOLVE_PUZZLE = "Solve"
+CHECK_PUZZLE = "Check"
 
 # Define Sudoku puzzle grid position and size
 # Calculate the grid position to center it in the window
@@ -93,20 +94,23 @@ class Button:
 
 # Difficulty button callbacks
 def easy_button_callback():
-    global puzzle, difficulty
+    global puzzle, difficulty, puzzle_solved
     difficulty = DIFFICULTY_EASY
+    puzzle_solved = False
     puzzle = generate_sudoku(difficulty)
     reset_selection()
 
 def medium_button_callback():
     global puzzle, difficulty
     difficulty = DIFFICULTY_MEDIUM
+    puzzle_solved = False
     puzzle = generate_sudoku(difficulty)
     reset_selection()
 
 def hard_button_callback():
     global puzzle, difficulty
     difficulty = DIFFICULTY_HARD
+    puzzle_solved = False
     puzzle = generate_sudoku(difficulty)
     reset_selection()
 
@@ -127,7 +131,11 @@ def solve_button_callback():
             if button.is_hovered() and pygame.mouse.get_pressed()[0]:
                 algorithm_selected = button.text  # This will store the selected algorithm
                 show_dialog = False  # Close the dialog
-    # puzzle.solve_sudoku()
+
+def check_button_callback():
+    global puzzle, puzzle_solved
+    if puzzle.is_solved():
+        puzzle_solved = True
 
 def backtracking_callback():
     global show_dialog
@@ -183,7 +191,6 @@ def a_search_callback():
             puzzle.set_value(row, col, value)
 
     show_dialog = False
-
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -196,7 +203,8 @@ buttons = [
     Button(DIFFICULTY_MEDIUM, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, medium_button_callback),
     Button(DIFFICULTY_HARD, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hard_button_callback),
     Button(PLAYER_HINT, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, hint_button_callback),
-    Button(SOLVE_PUZZLE, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, solve_button_callback)
+    Button(SOLVE_PUZZLE, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, solve_button_callback),
+    Button(CHECK_PUZZLE, (0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, check_button_callback)
 ]
 
 # To Do see if there is a better way to do this - feels corny 
@@ -270,10 +278,12 @@ def reset_selection():
 
 # Function to draw the Sudoku grid
 def draw_grid():
+    pygame.draw.rect(
+        window, GREEN if puzzle_solved else BLACK, (GRID_X, GRID_Y, GRID_SIZE, GRID_SIZE), 3)
     for row in range(9):
         for col in range(9):
-            cell_x = GRID_X + col * (CELL_SIZE + CELL_MARGIN)
-            cell_y = GRID_Y + row * (CELL_SIZE + CELL_MARGIN)
+            cell_x = GRID_X + col * (CELL_SIZE + CELL_MARGIN) + CELL_MARGIN
+            cell_y = GRID_Y + row * (CELL_SIZE + CELL_MARGIN) + CELL_MARGIN
 
             # Draw the cell background
             pygame.draw.rect(
@@ -281,18 +291,18 @@ def draw_grid():
 
             # Draw the main grid lines
             if row % 3 == 0 and row != 0:
-                pygame.draw.line(window, BLACK, (GRID_X, cell_y),
+                pygame.draw.line(window, GREEN if puzzle_solved else BLACK, (GRID_X, cell_y),
                                  (GRID_X + GRID_SIZE, cell_y), 3)
             if col % 3 == 0 and col != 0:
-                pygame.draw.line(window, BLACK, (cell_x, GRID_Y),
+                pygame.draw.line(window, GREEN if puzzle_solved else BLACK, (cell_x, GRID_Y),
                                  (cell_x, GRID_Y + GRID_SIZE), 3)
 
             # Draw the lighter cell grid lines
             if row != 0:
-                pygame.draw.line(window, GRAY, (cell_x, cell_y),
+                pygame.draw.line(window, GREEN if puzzle_solved else GRAY, (cell_x, cell_y),
                                  (cell_x + CELL_SIZE, cell_y), 1)
             if col != 0:
-                pygame.draw.line(window, GRAY, (cell_x, cell_y),
+                pygame.draw.line(window, GREEN if puzzle_solved else GRAY, (cell_x, cell_y),
                                  (cell_x, cell_y + CELL_SIZE), 1)
 
             # Draw the selected cell
@@ -329,6 +339,7 @@ def draw_grid():
 hint_row, hint_col, hint_value = None, None, None
 running = True
 show_dialog = False
+puzzle_solved = False
 
 # Main game loop
 while running:

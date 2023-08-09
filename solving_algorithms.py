@@ -63,7 +63,6 @@ def constraint_propagation(puzzle):
     
     return puzzle.is_solved()
 
-
 def solve_sudoku_bfs(puzzle):
     queue = deque([(puzzle, 0, 0)])
 
@@ -81,7 +80,6 @@ def solve_sudoku_bfs(puzzle):
                 queue.append((new_puzzle, new_row, new_col))
 
     return None
-
 
 def solve_sudoku_dfs(puzzle):
     empty_cell = find_empty_cell(puzzle.grid)
@@ -102,7 +100,6 @@ def solve_sudoku_dfs(puzzle):
                 return result  # Puzzle is solved
 
     return None  # No valid solution found
-
 
 def solve_sudoku_ids(puzzle):
     depth_limit = 1
@@ -139,7 +136,6 @@ def dls_recursive(puzzle, depth_limit, current_depth=0):
 
     return None
 
-
 class SudokuNode:
     def __init__(self, puzzle, row, col):
         self.puzzle = puzzle
@@ -170,7 +166,6 @@ class SudokuNode:
 
     def __lt__(self, other):
         return self.f < other.f
-
 
 def solve_sudoku_astar(puzzle):
     start_row, start_col = find_empty_cell(puzzle.grid)
