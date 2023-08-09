@@ -1,7 +1,5 @@
 import random
 import pandas as pd
-import copy
-
 
 class SudokuPuzzle:
     def __init__(self, grid):
