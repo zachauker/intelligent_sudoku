@@ -3,6 +3,7 @@ import sys
 import random
 import pandas as pd
 from sudoku_generator import generate_sudoku, get_hint
+import solving_algorithms
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -129,16 +130,27 @@ def solve_button_callback():
                 show_dialog = False  # Close the dialog
     # puzzle.solve_sudoku()
 
-# def backtracking_callback():
+def backtracking_callback():
+    global show_dialog
+    solving_algorithms.backtracking(puzzle)
+    show_dialog = False
 
-# def constraint_callback():
+def constraint_callback():
+    global show_dialog
+    solving_algorithms.constraint_propagation(puzzle)
+    show_dialog = False
 
-# def dlx_callback():
+def bfs_callback():
+    global show_dialog
+    solved = solving_algorithms.solve_sudoku_bfs(puzzle)
 
-# def annealing_callback():
+    # Iterate over each cell in the solved grid and update the puzzle's grid
+    for row in range(9):
+        for col in range(9):
+            value = solved.get_value(row, col)
+            puzzle.set_value(row, col, value)
 
-# def genetic_callback():
-
+    show_dialog = False
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -181,8 +193,8 @@ class Dialog:
             button_x = WINDOW_WIDTH // 2 - BUTTON_WIDTH // 2
             button_y = WINDOW_HEIGHT // 2 + idx * \
                 (BUTTON_HEIGHT + BUTTON_MARGIN)
-            button = Button(option.text, (button_x, button_y),
-                            BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, option.callback)
+            button = Button(option["text"], (button_x, button_y),
+                            BUTTON_WIDTH, BUTTON_HEIGHT, GRAY, GREEN, option["callback"])
             self.buttons.append(button)
 
     def show(self, surface):
@@ -201,9 +213,7 @@ class Dialog:
 dialog = Dialog("Select Solve Algorithm", [
         {"text": "Backtracking", "callback": backtracking_callback},
         {"text":"Constraint Propagation", "callback": constraint_callback},
-        {"text": "DLX Algorithm", "callback": dlx_callback},
-        {"text": "Simulated Annealing", "callback": annealing_callback},
-        {"text": "Genetic Algorithm", "callback": genetic_callback}
+        {"text": "BFS Algorithm", "callback": bfs_callback},
     ])
 
 # Function to get the clicked cell

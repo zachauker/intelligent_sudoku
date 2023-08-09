@@ -2,6 +2,7 @@ import random
 import pandas as pd
 import copy
 
+
 class SudokuPuzzle:
     def __init__(self, grid):
         self.grid = grid
@@ -17,7 +18,7 @@ class SudokuPuzzle:
         return self.initial_puzzle[row][col] == 0
     
     def copy(self):
-        return SudokuPuzzle([row[:] for row in self.puzzle])
+        return SudokuPuzzle([row[:] for row in self.grid])
     
     def is_valid_number(self, row, col, num):
         # Check if the number exists in the same row
@@ -48,6 +49,26 @@ class SudokuPuzzle:
     
     def is_initial_value(self, row, col):
         return self.initial_puzzle[row][col] != 0
+    
+    def is_solved(self):
+        # Check rows, columns, and subgrids
+        for i in range(9):
+            if not self.is_unit_valid(self.grid[i]):  # Check row
+                return False
+            # Check column
+            if not self.is_unit_valid([self.grid[j][i] for j in range(9)]):
+                return False
+            if not self.is_unit_valid(self.get_subgrid(i // 3, i % 3)):  # Check subgrid
+                return False
+        return True
+
+    def is_unit_valid(self, unit):
+        # Check if a row, column, or subgrid is valid (contains numbers 1 to 9 exactly once)
+        return sorted(unit) == list(range(1, 10))
+
+    def get_subgrid(self, row, col):
+        # Get the values of the 3x3 subgrid at the specified row and column
+        return [self.grid[3 * row + i][3 * col + j] for i in range(3) for j in range(3)]
     
     def is_valid(self):
         # Check rows and columns for duplicates
@@ -156,31 +177,25 @@ def get_hint(puzzle):
     for cell in sorted_cells:
         row, col = cell
 
-        # Check if constraint propagation finds a valid hint for this cell
-        if constraint_propagation(puzzle, row, col):
-            return row, col, puzzle.get_possible_values(row, col)[0]
+        original_value = puzzle.get_value(row, col)
+        possible_values = puzzle.get_possible_values(row, col)
+
+        for value in possible_values:
+            # Temporarily set the cell value to the possible value
+            puzzle.set_value(row, col, value)
+
+            # Check if the puzzle remains valid after setting the value
+            if puzzle.is_valid():
+                # Resets grid value back to original so that hint callback can handle setting hint value.
+                puzzle.set_value(row, col, original_value)
+                return row, col, value
+
+            # Reset the cell value to its original value and continue through loop
+            puzzle.set_value(row, col, original_value)
 
     # If no valid hint is found, return None
     return None, None, None
 
-def constraint_propagation(puzzle, row, col):
-    original_value = puzzle.get_value(row, col)
-    possible_values = puzzle.get_possible_values(row, col)
-
-    for value in possible_values:
-        # Temporarily set the cell value to the possible value
-        puzzle.set_value(row, col, value)
-
-        # Check if the puzzle remains valid after setting the value
-        if puzzle.is_valid():
-            # Reset the cell value to its original value
-            puzzle.set_value(row, col, original_value)
-            return True
-
-        # Reset the cell value to its original value
-        puzzle.set_value(row, col, original_value)
-
-    return False
 
 def find_most_difficult_cell(puzzle):
     max_conflicts = 1
