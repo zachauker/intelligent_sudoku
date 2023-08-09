@@ -101,3 +101,39 @@ def solve_sudoku_dfs(puzzle):
                 return result  # Puzzle is solved
 
     return None  # No valid solution found
+
+
+def solve_sudoku_ids(puzzle):
+    depth_limit = 1
+
+    while True:
+        result = depth_limited_search(puzzle, depth_limit)
+        if result is not None:
+            return result
+        depth_limit += 1
+
+
+def depth_limited_search(puzzle, depth_limit):
+    return dls_recursive(puzzle, depth_limit)
+
+
+def dls_recursive(puzzle, depth_limit, current_depth=0):
+    if current_depth == depth_limit:
+        return None
+
+    if puzzle.is_solved():
+        return puzzle
+
+    empty_cell = find_empty_cell(puzzle.grid)
+    row, col = empty_cell
+
+    for num in range(1, 10):
+        if puzzle.is_valid_number(row, col, num):
+            new_puzzle = puzzle.copy()
+            new_puzzle.set_value(row, col, num)
+
+            result = dls_recursive(new_puzzle, depth_limit, current_depth + 1)
+            if result is not None:
+                return result
+
+    return None

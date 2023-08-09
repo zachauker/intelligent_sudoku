@@ -132,30 +132,47 @@ class SudokuPuzzle:
             num_cells_to_remove = 50
 
         # Remove numbers from the grid
-        cells_removed = 0
-        while cells_removed < num_cells_to_remove:
+        for _ in range(num_cells_to_remove):
             row = random.randint(0, 8)
             col = random.randint(0, 8)
-            if self.get_value(row, col) != 0:
-                self.set_value(row, col, 0)
-                cells_removed += 1
+            while self.get_value(row, col) == 0:
+                row = random.randint(0, 8)
+                col = random.randint(0, 8)
+            backup = self.get_value(row, col)
+            self.set_value(row, col, 0)
   
 def generate_sudoku(difficulty):
-    # Create an empty Sudoku grid
-    grid = [[0] * 9 for _ in range(9)]
+    grid = [[0 for _ in range(9)] for _ in range(9)]
 
     # Instantiate SudokuPuzzle class object with generated grid.
     puzzle = SudokuPuzzle(grid)
 
-    # Solve the Sudoku grid
-    puzzle.solve_sudoku()
+    fill_grid(puzzle)
 
-    # Remove numbers based on the difficulty level
     puzzle.remove_numbers(difficulty)
 
-    ready_puzzle = SudokuPuzzle(puzzle.grid)
+    puzzle.initial_puzzle = [row[:] for row in puzzle.grid]
 
-    return ready_puzzle
+    return puzzle
+
+def fill_grid(puzzle):
+    numbers = list(range(1, 10))
+    random.shuffle(numbers)
+    fill(puzzle, numbers)
+
+def fill(puzzle, numbers):
+    for row in range(9):
+        for col in range(9):
+            if puzzle.get_value(row, col) == 0:
+                random.shuffle(numbers)
+                for num in numbers:
+                    if puzzle.is_valid_number(row, col, num):
+                        puzzle.set_value(row, col, num)
+                        if fill(puzzle, numbers):
+                            return True
+                        puzzle.set_value(row, col, 0)
+                return False
+    return True
 
 def find_empty_cell(grid):
     for row in range(9):

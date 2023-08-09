@@ -162,6 +162,17 @@ def dfs_callback():
     
     show_dialog = False
 
+def ids_callback():
+    global show_dialog
+    solved = solving_algorithms.solve_sudoku_ids(puzzle)
+
+    for row in range(9):
+        for col in range(9):
+            value = solved.get_value(row, col)
+            puzzle.set_value(row, col, value)
+
+    show_dialog = False
+
         
 # Define difficulty button size.
 BUTTON_WIDTH = 100
@@ -225,7 +236,8 @@ dialog = Dialog("Select Solve Algorithm", [
         {"text": "Backtracking", "callback": backtracking_callback},
         {"text":"Constraint Propagation", "callback": constraint_callback},
         {"text": "BFS Algorithm", "callback": bfs_callback},
-        {"text": "DFS Algorithm", "callback": dfs_callback}
+        {"text": "DFS Algorithm", "callback": dfs_callback},
+        {"text": "IDS Algorithm", "callback": ids_callback}
     ])
 
 # Function to get the clicked cell
