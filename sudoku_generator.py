@@ -244,4 +244,3 @@ def count_conflicts(grid, row, col):
                 conflicts += 1
 
     return conflicts
-

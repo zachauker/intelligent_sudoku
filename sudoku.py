@@ -139,12 +139,28 @@ def check_button_callback():
 
 def backtracking_callback():
     global show_dialog
-    solving_algorithms.backtracking(puzzle)
+    solved = solving_algorithms.backtracking(puzzle)
+
+    # Iterate over each cell in the solved grid and update the puzzle's grid
+    if solved is not None:
+        for row in range(9):
+            for col in range(9):
+                value = solved.get_value(row, col)
+                puzzle.set_value(row, col, value)
+
     show_dialog = False
 
 def constraint_callback():
     global show_dialog
-    solving_algorithms.constraint_propagation(puzzle)
+    solved = solving_algorithms.constraint_propagation(puzzle)
+
+    if solved is not None:
+        # Iterate over each cell in the solved grid and update the puzzle's grid
+        for row in range(9):
+            for col in range(9):
+                value = solved.get_value(row, col)
+                puzzle.set_value(row, col, value)
+    
     show_dialog = False
 
 def bfs_callback():
