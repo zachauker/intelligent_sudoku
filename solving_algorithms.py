@@ -80,3 +80,24 @@ def solve_sudoku_bfs(puzzle):
                 queue.append((new_puzzle, new_row, new_col))
 
     return None
+
+
+def solve_sudoku_dfs(puzzle):
+    empty_cell = find_empty_cell(puzzle.grid)
+
+    if puzzle.is_solved():
+        return puzzle  # Puzzle is solved
+
+    row, col = empty_cell
+
+    for num in range(1, 10):
+        if puzzle.is_valid_number(row, col, num):
+            new_puzzle = puzzle.copy()
+            new_puzzle.set_value(row, col, num)
+
+            # Recursive call 
+            result = solve_sudoku_dfs(new_puzzle)
+            if result:
+                return result  # Puzzle is solved
+
+    return None  # No valid solution found
