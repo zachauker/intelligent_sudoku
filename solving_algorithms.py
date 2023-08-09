@@ -1,6 +1,7 @@
 import numpy as np
 from sudoku_generator import count_conflicts, find_empty_cell
 from collections import deque
+import heapq
 
 def backtracking(puzzle):
     # Find the next empty cell
@@ -135,5 +136,61 @@ def dls_recursive(puzzle, depth_limit, current_depth=0):
             result = dls_recursive(new_puzzle, depth_limit, current_depth + 1)
             if result is not None:
                 return result
+
+    return None
+
+
+class SudokuNode:
+    def __init__(self, puzzle, row, col):
+        self.puzzle = puzzle
+        self.row = row
+        self.col = col
+        self.g = 0  # Cost to reach this node from the start
+        self.h = self.heuristic()  # Heuristic estimation of remaining cost
+        self.f = self.g + self.h  # Combined cost
+
+    def heuristic(self):
+        # Calculate the number of empty cells in the puzzle
+        empty_cells = sum(
+            1 for row in self.puzzle.grid for value in row if value == 0)
+        return empty_cells
+
+    def expand(self):
+        # Generate child nodes by trying all possible numbers in the current cell
+        children = []
+        possible_values = self.puzzle.get_possible_values(self.row, self.col)
+
+        for value in possible_values:
+            new_puzzle = self.puzzle.copy()
+            new_puzzle.set_value(self.row, self.col, value)
+            new_row, new_col = find_empty_cell(new_puzzle.grid)
+            children.append(SudokuNode(new_puzzle, new_row, new_col))
+
+        return children
+
+    def __lt__(self, other):
+        return self.f < other.f
+
+
+def solve_sudoku_astar(puzzle):
+    start_row, start_col = find_empty_cell(puzzle.grid)
+    start_node = SudokuNode(puzzle, start_row, start_col)
+
+    open_list = [start_node]
+    closed_set = set()
+
+    while open_list:
+        current_node = heapq.heappop(open_list)
+
+        if current_node.puzzle.is_solved():
+            return current_node.puzzle
+
+        closed_set.add(current_node.puzzle)
+
+        for child_node in current_node.expand():
+            if child_node.puzzle not in closed_set:
+                child_node.g = current_node.g + 1
+                child_node.f = child_node.g + child_node.h
+                heapq.heappush(open_list, child_node)
 
     return None
