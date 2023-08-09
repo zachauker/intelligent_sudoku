@@ -1,6 +1,5 @@
 import pygame
 import sys
-import random
 import pandas as pd
 from sudoku_generator import generate_sudoku, get_hint
 import solving_algorithms
