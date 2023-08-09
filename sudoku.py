@@ -101,14 +101,14 @@ def easy_button_callback():
     reset_selection()
 
 def medium_button_callback():
-    global puzzle, difficulty
+    global puzzle, difficulty, puzzle_solved
     difficulty = DIFFICULTY_MEDIUM
     puzzle_solved = False
     puzzle = generate_sudoku(difficulty)
     reset_selection()
 
 def hard_button_callback():
-    global puzzle, difficulty
+    global puzzle, difficulty, puzzle_solved
     difficulty = DIFFICULTY_HARD
     puzzle_solved = False
     puzzle = generate_sudoku(difficulty)
@@ -151,11 +151,12 @@ def bfs_callback():
     global show_dialog
     solved = solving_algorithms.solve_sudoku_bfs(puzzle)
 
-    # Iterate over each cell in the solved grid and update the puzzle's grid
-    for row in range(9):
-        for col in range(9):
-            value = solved.get_value(row, col)
-            puzzle.set_value(row, col, value)
+    if solved is not None:
+        # Iterate over each cell in the solved grid and update the puzzle's grid
+        for row in range(9):
+            for col in range(9):
+                value = solved.get_value(row, col)
+                puzzle.set_value(row, col, value)
 
     show_dialog = False
 
@@ -163,10 +164,11 @@ def dfs_callback():
     global show_dialog
     solved = solving_algorithms.solve_sudoku_dfs(puzzle)
 
-    for row in range(9):
-        for col in range(9):
-            value = solved.get_value(row, col)
-            puzzle.set_value(row, col, value)
+    if solved is not None:
+        for row in range(9):
+            for col in range(9):
+                value = solved.get_value(row, col)
+                puzzle.set_value(row, col, value)
     
     show_dialog = False
 
@@ -174,10 +176,11 @@ def ids_callback():
     global show_dialog
     solved = solving_algorithms.solve_sudoku_ids(puzzle)
 
-    for row in range(9):
-        for col in range(9):
-            value = solved.get_value(row, col)
-            puzzle.set_value(row, col, value)
+    if solved is not None:
+        for row in range(9):
+            for col in range(9):
+                value = solved.get_value(row, col)
+                puzzle.set_value(row, col, value)
 
     show_dialog = False
 
@@ -185,10 +188,11 @@ def a_search_callback():
     global show_dialog
     solved = solving_algorithms.solve_sudoku_astar(puzzle)
 
-    for row in range(9):
-        for col in range(9):
-            value = solved.get_value(row, col)
-            puzzle.set_value(row, col, value)
+    if solved is not None:
+        for row in range(9):
+            for col in range(9):
+                value = solved.get_value(row, col)
+                puzzle.set_value(row, col, value)
 
     show_dialog = False
         
