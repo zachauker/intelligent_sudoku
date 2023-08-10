@@ -1,7 +1,7 @@
 # intelligent_sudoku
 Sudoku puzzle generator and solver using different AI techniques. 
 
-Package requirements:
+Package requirements (Install via pip3):
 
 pygame
 
