@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Number of puzzles to generate and solve
-num_puzzles = 100
+num_puzzles = 10
 
 # List of solver functions
 solver_functions = [
@@ -154,7 +154,7 @@ def generate_visualizations(data, difficulty):
     axs[0, 1].set_title(f"Average Memory Consumption ({difficulty})")
     axs[0, 1].set_ylabel("Memory (MB)")
     axs[0, 1].tick_params(axis='x', rotation=40)
-    axs[0, 1].set_ylim(78, 86)
+    # axs[0, 1].set_ylim(80, 90)
 
     # Plot average solving time
     axs[1, 0].bar([entry["algorithm"] for entry in data],
@@ -178,11 +178,11 @@ def generate_visualizations(data, difficulty):
 
 def main():
     # Run performance analysis and add results for each algorithm to list.
-    # easy_performance_results = []
-    # for solving_function in solver_functions:
-    #     easy_results = analyze_algorithms(solving_function, "Easy")
-    #     easy_performance_results.append(easy_results)
-    # generate_visualizations(easy_performance_results, "Easy")
+    easy_performance_results = []
+    for solving_function in solver_functions:
+        easy_results = analyze_algorithms(solving_function, "Easy")
+        easy_performance_results.append(easy_results)
+    generate_visualizations(easy_performance_results, "Easy")
 
     medium_performance_results = []
     for solving_function in solver_functions:
@@ -190,10 +190,11 @@ def main():
         medium_performance_results.append(medium_results)
     generate_visualizations(medium_performance_results, "Medium")
     
-    # hard_performance_results = []
-    # for solving_function in solver_functions:
-    #     hard_results = analyze_algorithms(solving_function, "Hard")
-    #     hard_performance_results.append(hard_results)
+    hard_performance_results = []
+    for solving_function in solver_functions:
+        hard_results = analyze_algorithms(solving_function, "Hard")
+        hard_performance_results.append(hard_results)
+    generate_visualizations(hard_performance_results, "Hard")
     
     exit
 

@@ -60,6 +60,7 @@ def constraint_propagation(puzzle):
     return puzzle
 
 def solve_sudoku_bfs(puzzle):
+    max_queue_size = 1000
     queue = deque([(puzzle, 0, 0)])
 
     while queue:
@@ -73,6 +74,11 @@ def solve_sudoku_bfs(puzzle):
                 new_puzzle = current_puzzle.copy()
                 new_puzzle.set_value(row, col, num)
                 new_row, new_col = find_empty_cell(new_puzzle.grid)
+
+                # If the queue size exceeds the maximum, remove the oldest state
+                if len(queue) >= max_queue_size:
+                    queue.popleft()
+
                 queue.append((new_puzzle, new_row, new_col))
 
     return current_puzzle
@@ -97,21 +103,25 @@ def solve_sudoku_dfs(puzzle):
 
     return None  # No valid solution found
 
-def solve_sudoku_ids(puzzle):
-    depth_limit = 1
 
-    while True:
+def solve_sudoku_ids(puzzle):
+    max_depth = 100
+    depth_limit = 100
+
+    while depth_limit <= max_depth:
         result = depth_limited_search(puzzle, depth_limit)
         if result is not None:
             return result
         depth_limit += 1
 
+
 def depth_limited_search(puzzle, depth_limit):
     return dls_recursive(puzzle, depth_limit)
 
+
 def dls_recursive(puzzle, depth_limit, current_depth=0):
     if current_depth == depth_limit:
-        return None
+        return puzzle
 
     if puzzle.is_solved():
         return puzzle
@@ -129,6 +139,7 @@ def dls_recursive(puzzle, depth_limit, current_depth=0):
                 return result
 
     return None
+
 
 class SudokuNode:
     def __init__(self, puzzle, row, col):
