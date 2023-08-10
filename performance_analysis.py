@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Number of puzzles to generate and solve
-num_puzzles = 10
+num_puzzles = 100
 
 # List of solver functions
 solver_functions = [
@@ -47,9 +47,9 @@ def analyze_algorithms(solving_function, difficulty):
         accuracy = (total_correct / num_puzzles) * 100
 
         print(f"Algorithm: {solving_function.__name__}")
-        print("Average Time: {avg_time:.6f} seconds")
-        print("CPU Usage: {avg_cpu}%")
-        print("Memory Usage: {avg_mem:.2f} MB")
+        print(f"Average Time: {avg_time:.6f} seconds")
+        print(f"CPU Usage: {avg_cpu}%")
+        print(f"Memory Usage: {avg_mem:.2f} MB")
         print(f"Accuracy: {accuracy:.2f}%")
         print("-----------------------------")
 
@@ -58,7 +58,8 @@ def analyze_algorithms(solving_function, difficulty):
             "average_cpu": avg_cpu,
             "average_mem": avg_mem,
             "avg_time": avg_time,
-            "accuracy": accuracy
+            "accuracy": accuracy,
+            "difficulty": difficulty
         }
         
 def analyze_algorithm_speed(solving_function, difficulty):
@@ -135,36 +136,64 @@ def analyze_algorithmn_accuracy(solving_function, difficulty):
         "accuracy": accuracy
     }
 
-def process_performance_results(performance):
-    df = pd.DataFrame(performance)
+
+def generate_visualizations(data, difficulty):
     # Create subplots
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
 
-    # Plot for Algorithm vs Average CPU
-    df.plot(kind='bar', x='algorithm', y='average_cpu', ax=ax1)
-    ax1.set_xlabel('Algorithms')
-    ax1.set_ylabel('Average CPU Performance')
-    ax1.set_title('Algorithm vs Avg CPU Performance')
-    ax1.tick_params(axis='x', rotation=45)
+    # Plot average CPU usage
+    axs[0, 0].bar([entry["algorithm"] for entry in data], [
+                  entry["average_cpu"] for entry in data])
+    axs[0, 0].set_title(f"Average CPU Usage ({difficulty})")
+    axs[0, 0].set_ylabel("Usage (%)")
+    axs[0, 0].tick_params(axis='x', rotation=40)
 
-    # Plot for Algorithm vs Average Memory
-    df.plot(kind='bar', x='algorithm', y='average_mem', color='orange', ax=ax2)
-    ax2.set_xlabel('Algorithms')
-    ax2.set_ylabel('Average Memory Usage')
-    ax2.set_title('Algorithm vs Avg Memory Usage')
-    ax2.tick_params(axis='x', rotation=45)
+    # Plot average memory consumption
+    axs[0, 1].bar([entry["algorithm"] for entry in data], [
+                  entry["average_mem"] for entry in data])
+    axs[0, 1].set_title(f"Average Memory Consumption ({difficulty})")
+    axs[0, 1].set_ylabel("Memory (MB)")
+    axs[0, 1].tick_params(axis='x', rotation=40)
+    axs[0, 1].set_ylim(78, 86)
+
+    # Plot average solving time
+    axs[1, 0].bar([entry["algorithm"] for entry in data],
+                  [entry["avg_time"] for entry in data])
+    axs[1, 0].set_title(f"Average Solving Time ({difficulty})")
+    axs[1, 0].set_ylabel("Time (s)")
+    axs[1, 0].tick_params(axis='x', rotation=40)
+
+    # Plot accuracy
+    axs[1, 1].bar([entry["algorithm"] for entry in data],
+                  [entry["accuracy"] for entry in data])
+    axs[1, 1].set_title(f"Accuracy ({difficulty})")
+    axs[1, 1].set_ylabel("Accuracy")
+    axs[1, 1].tick_params(axis='x', rotation=40)
 
     # Adjust layout
     plt.tight_layout()
 
-    # Show the plots
+    # Show plots
     plt.show()
 
 def main():
     # Run performance analysis and add results for each algorithm to list.
-    performance_results = []
+    # easy_performance_results = []
+    # for solving_function in solver_functions:
+    #     easy_results = analyze_algorithms(solving_function, "Easy")
+    #     easy_performance_results.append(easy_results)
+    # generate_visualizations(easy_performance_results, "Easy")
+
+    medium_performance_results = []
     for solving_function in solver_functions:
-        results = analyze_algorithms(solving_function, "Easy")
+        medium_results = analyze_algorithms(solving_function, "Medium")
+        medium_performance_results.append(medium_results)
+    generate_visualizations(medium_performance_results, "Medium")
+    
+    # hard_performance_results = []
+    # for solving_function in solver_functions:
+    #     hard_results = analyze_algorithms(solving_function, "Hard")
+    #     hard_performance_results.append(hard_results)
     
     exit
 
